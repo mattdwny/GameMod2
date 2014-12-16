@@ -9597,7 +9597,7 @@ void idPlayer::Think( void ) {
 
 	while(damageResidue >= 1)
 	{
-		lastInflictor->healthResidue += .5;
+		if(lastAttacker) lastAttacker->healthResidue += .5;
 		health--;
 		damageResidue--;
 	}
@@ -9606,7 +9606,7 @@ void idPlayer::Think( void ) {
 		health += 1;
 		healthResidue--;
 	}
-	Damage(lastInflictor, lastAttacker, lastDir, lastDamageDefName, 0, lastLocation); //deal zero damage, used for the side effect that checks whether or not the player is dead
+	if(lastAttacker) Damage(lastInflictor, lastAttacker, lastDir, lastDamageDefName, 0, lastLocation); //deal zero damage, used for the side effect that checks whether or not the player is dead
 
 	UpdatePowerUps();
 
@@ -10282,7 +10282,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		
 		if(inflictor && attacker) //md369
 		{
-			inflictor->healthResidue = ((float) damage)/2;
+			attacker->healthResidue = ((float) damage)/2;
 			healthVel -= sqrt((float)damage)/10; //ping damage will actually cause more bleed, so 10 bullets that deal 1 damage will do as much bleed as 1 rocket that does 100 damage
 			lastInflictor = inflictor;
 			lastAttacker = attacker;
