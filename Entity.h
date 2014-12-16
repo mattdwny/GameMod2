@@ -135,6 +135,10 @@ public:
 	idList< idEntityPtr<idEntity> >	targets;		// when this entity is activated these entities entity are activated
 
 	int						health;					// FIXME: do all objects really need health?
+	float					healthVel;
+	float					healthAccel;			//md369 additions
+	float					damageResidue;
+	idEntity *				lastInflictor;
 
 // RAVEN BEGIN
 // ddynerman: optional pre-prediction

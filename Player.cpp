@@ -1837,6 +1837,9 @@ void idPlayer::Spawn( void ) {
 		gameLocal.Error( "entityNum > MAX_CLIENTS for player.  Player may only be spawned with a client." );
 	}
 
+	//md369
+	healthAccel = 1;
+
 	// allow thinking during cinematics
 	cinematic = true;
 
@@ -9582,6 +9585,12 @@ void idPlayer::Think( void ) {
 	
 	UpdateHud();
 
+	//md369
+
+	healthVel += healthAccel; //apply half "gravity" //http://www.niksula.hut.fi/~hkankaan/Homepages/gravity.html
+	health += healthVel;
+	healthVel += healthAccel; //apply half "gravity"
+
 	UpdatePowerUps();
 
 	UpdateDeathSkin( false );
@@ -10253,6 +10262,14 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 
 		int oldHealth = health;
 		health -= damage;
+		
+		if(inflictor && attacker) //md369
+		{
+			inflictor->damageResidue -= damage/2; //an interesting way of healing, but I think it'll work
+			healthVel -= sqrt((float)damage)/10; //ping damage will actually cause more bleed, so 10 bullets that deal 1 damage will do as much bleed as 1 rocket that does 100 damage
+			lastInflictor = inflictor;
+		}
+
 
 		GAMELOG_ADD ( va("player%d_damage_taken", entityNumber ), damage );
 		GAMELOG_ADD ( va("player%d_damage_%s", entityNumber, damageDefName), damage );
