@@ -9595,21 +9595,18 @@ void idPlayer::Think( void ) {
 		if(healthVel > 0) healthVel = 0;
 	}
 
-	if(damageResidue < 0)
+	while(damageResidue >= 1)
 	{
-		while(damageResidue-- <= -1)
-		{
-			lastInflictor->damageResidue += .5;
-			Damage(this,lastInflictor,idVec3(),NULL,1,0);
-		}
+		lastInflictor->healthResidue += .5;
+		health--;
+		damageResidue--;
 	}
-	else //healing
+	while(healthResidue >= 1) //healthResidue would not be required if vampirism were 100%, but because of how floats work, it's required.
 	{
-		while(damageResidue-- >= 1)
-		{
-			health += 1;
-		}
+		health += 1;
+		healthResidue--;
 	}
+	Damage(lastInflictor, lastAttacker, idVec3(), NULL, 0, 0); //deal zero damage, used for the side effect that checks whether or not the player is dead
 
 	UpdatePowerUps();
 
@@ -10285,9 +10282,10 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		
 		if(inflictor && attacker) //md369
 		{
-			inflictor->damageResidue -= damage/2; //an interesting way of healing, but I think it'll work
+			inflictor->healthResidue = ((float) damage)/2;
 			healthVel -= sqrt((float)damage)/10; //ping damage will actually cause more bleed, so 10 bullets that deal 1 damage will do as much bleed as 1 rocket that does 100 damage
 			lastInflictor = inflictor;
+			lastAttacker = attacker;
 		}
 
 

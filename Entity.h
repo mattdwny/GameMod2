@@ -138,7 +138,9 @@ public:
 	float					healthVel;
 	float					healthAccel;			//md369 additions
 	float					damageResidue;
+	float					healthResidue;
 	idEntity *				lastInflictor;
+	idEntity *				lastAttacker;
 
 // RAVEN BEGIN
 // ddynerman: optional pre-prediction
