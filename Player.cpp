@@ -10286,6 +10286,9 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 			healthVel -= sqrt((float)damage)/10; //ping damage will actually cause more bleed, so 10 bullets that deal 1 damage will do as much bleed as 1 rocket that does 100 damage
 			lastInflictor = inflictor;
 			lastAttacker = attacker;
+			lastDir = dir;
+			lastDamageDefName = damageDefName;
+			lastLocation = location; 
 		}
 
 

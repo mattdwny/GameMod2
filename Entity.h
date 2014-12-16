@@ -141,6 +141,9 @@ public:
 	float					healthResidue;
 	idEntity *				lastInflictor;
 	idEntity *				lastAttacker;
+	idVec3					lastDir;
+	char *					lastDamageDefName;
+	int						lastLocation; 
 
 // RAVEN BEGIN
 // ddynerman: optional pre-prediction
