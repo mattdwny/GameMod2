@@ -9587,9 +9587,29 @@ void idPlayer::Think( void ) {
 
 	//md369
 
-	healthVel += healthAccel; //apply half "gravity" //http://www.niksula.hut.fi/~hkankaan/Homepages/gravity.html
-	health += healthVel;
-	healthVel += healthAccel; //apply half "gravity"
+	if(healthVel < 0)
+	{
+		healthVel += healthAccel; //apply half "gravity" //http://www.niksula.hut.fi/~hkankaan/Homepages/gravity.html
+		if(healthVel < 0) damageResidue += healthVel;
+		healthVel += healthAccel; //apply half "gravity"
+		if(healthVel > 0) healthVel = 0;
+	}
+
+	if(damageResidue < 0)
+	{
+		while(damageResidue-- <= -1)
+		{
+			lastInflictor->damageResidue += .5;
+			Damage(this,lastInflictor,idVec3(),NULL,1,0);
+		}
+	}
+	else //healing
+	{
+		while(damageResidue-- >= 1)
+		{
+			health += 1;
+		}
+	}
 
 	UpdatePowerUps();
 
