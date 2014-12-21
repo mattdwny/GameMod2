@@ -1838,7 +1838,10 @@ void idPlayer::Spawn( void ) {
 	}
 
 	//md369
-	healthAccel = 1;
+	healthVel = 0;
+	healthAccel = 0.333;
+	damageResidue = 0;
+	healthResidue = 0;
 
 	// allow thinking during cinematics
 	cinematic = true;
@@ -9586,12 +9589,21 @@ void idPlayer::Think( void ) {
 	UpdateHud();
 
 	//::Think md369
-
+	static int delayer = 1;
+	if(delayer > 50)
+	{
+		delayer = 0;
+		gameLocal.Printf("healthVel: %f\n",healthVel);
+		gameLocal.Printf("healthAccel: %f\n",healthAccel);
+		gameLocal.Printf("healthResidue: %f\n",healthResidue);
+		gameLocal.Printf("damageResidue: %f\n",damageResidue);
+	}
+	delayer++;
 	if(healthVel < 0)
 	{
-		healthVel += healthAccel; //apply half "gravity" //http://www.niksula.hut.fi/~hkankaan/Homepages/gravity.html
-		if(healthVel < 0) damageResidue += healthVel;
-		healthVel += healthAccel; //apply half "gravity"
+		healthVel += healthAccel / 60; //apply half "gravity" //http://www.niksula.hut.fi/~hkankaan/Homepages/gravity.html
+		if(healthVel < 0) damageResidue -= healthVel / 60; //healthVelocity is negative so scale to positive
+		healthVel += healthAccel / 60; //apply half "gravity"
 		if(healthVel > 0) healthVel = 0;
 	}
 
@@ -9600,13 +9612,14 @@ void idPlayer::Think( void ) {
 		if(lastAttacker) lastAttacker->healthResidue += .5;
 		health--;
 		damageResidue--;
+		if(health < 0) healthVel = 0; //fixing a glitch where healthVel carries over to next life.
 	}
 	while(healthResidue >= 1) //healthResidue would not be required if vampirism were 100%, but because of how floats work, it's required.
 	{
 		health += 1;
 		healthResidue--;
 	}
-	if(lastAttacker) Damage(lastInflictor, lastAttacker, lastDir, lastDamageDefName, 0, lastLocation); //deal zero damage, used for the side effect that checks whether or not the player is dead
+	//if(lastAttacker) Damage(lastInflictor, lastAttacker, lastDir, lastDamageDefName, 0, lastLocation); //deal zero damage, used for the side effect that checks whether or not the player is dead
 
 	UpdatePowerUps();
 
@@ -10094,6 +10107,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
  	int			knockback;
  	idVec3		damage_from;
  	float		attackerPushScale;
+	bool		vampirism = false;
 
 	float modifiedDamageScale = damageScale;
 	
@@ -10129,6 +10143,9 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		}
 		return;
 	}
+
+	if(inflictor && attacker) vampirism = true;
+	else					  vampirism = false;
 
 	if ( !inflictor ) {
 		inflictor = gameLocal.world;
@@ -10280,17 +10297,23 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		int oldHealth = health;
 		health -= damage;
 		
-		if(inflictor && attacker) //md369
+		if(vampirism && attacker != this /*no self vampirism, as it would screw up the meta by allowing health denial*/) //md369
 		{
-			attacker->healthResidue = ((float) damage)/2;
-			healthVel -= sqrt((float)damage)/10; //ping damage will actually cause more bleed, so 10 bullets that deal 1 damage will do as much bleed as 1 rocket that does 100 damage
-			lastInflictor = inflictor;
+			attacker->healthResidue += ((float) damage)/2;
+			healthVel -= sqrt((float)damage); //ping damage will actually cause more bleed, so 10 bullets that deal 1 damage will do as much bleed as 1 rocket that does 100 damage
+			//lastInflictor = inflictor;
 			lastAttacker = attacker;
-			lastDir = (idVec3) dir;
-			lastDamageDefName = (char*) damageDefName;
-			lastLocation = location; 
+			//lastDir = idVec3(dir);
+			//strcpy(&lastDamageDefName[0],damageDefName);
+			//lastLocation = location; 
 		}
 
+		if(health < 0) 
+		{
+			damageResidue = 0;
+			healthResidue = 0; //fixes a reviving glitch
+			healthVel = 0;
+		}
 
 		GAMELOG_ADD ( va("player%d_damage_taken", entityNumber ), damage );
 		GAMELOG_ADD ( va("player%d_damage_%s", entityNumber, damageDefName), damage );
@@ -10313,7 +10336,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
  			isTelefragged = damageDef->dict.GetBool( "telefrag" );
  
  			lastDmgTime = gameLocal.time;
-
+			
 			Killed( inflictor, attacker, damage, dir, location );
 
 			if ( oldHealth > 0 ) {	

@@ -7902,7 +7902,7 @@ idEntity* idGameLocal::HitScan(
 							statManager->WeaponHit( (idActor*)owner, ent, ((idPlayer*)owner)->GetCurrentWeapon() );
 						}
 						// RAVEN END
-						ent->Damage( owner, owner, dir, damage, damageScale, hitJoint ); //md369
+						ent->Damage( owner, owner, dir, damage, damageScale, hitJoint );
 					}
 
 					// Let the entity add its own damage effect

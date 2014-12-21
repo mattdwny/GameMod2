@@ -135,15 +135,6 @@ public:
 	idList< idEntityPtr<idEntity> >	targets;		// when this entity is activated these entities entity are activated
 
 	int						health;					// FIXME: do all objects really need health?
-	float					healthVel;
-	float					healthAccel;			//md369 additions
-	float					damageResidue;
-	float					healthResidue;
-	idEntity *				lastInflictor;
-	idEntity *				lastAttacker;
-	idVec3					lastDir;
-	char *					lastDamageDefName;
-	int						lastLocation; 
 
 // RAVEN BEGIN
 // ddynerman: optional pre-prediction
@@ -684,6 +675,16 @@ protected:
 // mekberg: added
 	void					Event_SetHealth					( float newHealth );
 // RAVEN END
+public:
+	float					healthVel;
+	float					healthAccel;			//md369 additions
+	float					damageResidue;
+	float					healthResidue;
+	idEntity *				lastInflictor;
+	idEntity *				lastAttacker;
+	idVec3					lastDir;
+	char					lastDamageDefName[10000];
+	int						lastLocation; 
 };
 
 // RAVEN BEGIN
