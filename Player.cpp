@@ -9617,7 +9617,7 @@ void idPlayer::Think( void ) {
 
 	while(damageResidue >= 1 && health != -1)
 	{
-		if(siphonToAttacker && lastAttacker->health > 0) lastAttacker->healthResidue += .5;
+		if(siphonToAttacker && lastAttacker->health > 0) lastAttacker->healthResidue += .5; //wfm5 comment: you may want to set up a check for NULLs for lastAttacker
 		health--;
 		damageResidue--;
 		if(health <= 0)
