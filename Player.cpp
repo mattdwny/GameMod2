@@ -9615,23 +9615,26 @@ void idPlayer::Think( void ) {
 		healthResidue--;
 	}
 
-	while(damageResidue >= 1)
+	while(damageResidue >= 1 && health != -1)
 	{
-		if(lastAttacker) lastAttacker->healthResidue += .5;
+		if(siphonToAttacker && lastAttacker->health > 0) lastAttacker->healthResidue += .5;
 		health--;
 		damageResidue--;
-		if(health <= 1 && health != -1)
+		if(health <= 0)
 		{
+			//make sure the player is "reset"
 			healthResidue = 0;
 			damageResidue = 0;
 			healthVel = 0;
 			health = -1;
-			if(lastAttacker)
-			{
-				gameLocal.mpGame.PlayerDeath( this, static_cast<idPlayer*>(lastAttacker), MAX_WEAPONS ); //increment points in Multiplayer match
-				lastAttacker->lastAttacker = NULL;
-				lastAttacker = NULL;
-			}
+
+			//change the state of the player that killed you
+			gameLocal.mpGame.PlayerDeath( this, static_cast<idPlayer*>(lastAttacker), MAX_WEAPONS ); //increment points in Multiplayer match, MAX_WEAPONS => ambiguous death cause
+			lastAttacker->siphonToAttacker = 0; //tell the person who killed you that they don't need to siphon life anymore (although they still damage themselves), this line is super meh
+
+			//destroy references to the player that damaged you last
+			siphonToAttacker = 0;
+			lastAttacker = NULL;
 		}
 	}
 
@@ -10313,9 +10316,10 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		
 		if(vampirism && attacker != this /*no self vampirism, as it would screw up the meta by allowing health denial*/) //md369
 		{
-			if(attacker) attacker->healthResidue += ((float) damage)/2;
+			if(attacker->health > 0) attacker->healthResidue += ((float) damage)/2;
 			healthVel -= sqrt((float)damage); //ping damage will actually cause more bleed, so 10 bullets that deal 1 damage will do as much bleed as 1 rocket that does 100 damage
 			lastAttacker = attacker;
+			siphonToAttacker = 1; //the player won't siphon health to his attacker until he is told to
 		}
 
 		GAMELOG_ADD ( va("player%d_damage_taken", entityNumber ), damage );
