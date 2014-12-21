@@ -680,11 +680,8 @@ public:
 	float					healthAccel;			//md369 additions
 	float					damageResidue;
 	float					healthResidue;
-	idEntity *				lastInflictor;
 	idEntity *				lastAttacker;
-	idVec3					lastDir;
-	char					lastDamageDefName[10000];
-	int						lastLocation; 
+	int						siphonToAttacker;
 };
 
 // RAVEN BEGIN
