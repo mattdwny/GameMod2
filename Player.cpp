@@ -9617,7 +9617,7 @@ void idPlayer::Think( void ) {
 
 	while(damageResidue >= 1 && health != -1)
 	{
-		if(siphonToAttacker && lastAttacker->health > 0) lastAttacker->healthResidue += .5; //wfm5 comment: you may want to set up a check for NULLs for lastAttacker
+		if(lastAttacker && siphonToAttacker && lastAttacker->health > 0) lastAttacker->healthResidue += .5; //it can't hurt to put in extra nullity checks
 		health--;
 		damageResidue--;
 		if(health <= 0)
@@ -9629,8 +9629,11 @@ void idPlayer::Think( void ) {
 			health = -1;
 
 			//change the state of the player that killed you
-			gameLocal.mpGame.PlayerDeath( this, static_cast<idPlayer*>(lastAttacker), MAX_WEAPONS ); //increment points in Multiplayer match, MAX_WEAPONS => ambiguous death cause
-			lastAttacker->siphonToAttacker = 0; //tell the person who killed you that they don't need to siphon life anymore (although they still damage themselves), this line is super meh
+			if(lastAttacker) //just in case these nullity checks are here thanks to Will M.
+			{
+				gameLocal.mpGame.PlayerDeath( this, static_cast<idPlayer*>(lastAttacker), MAX_WEAPONS ); //increment points in Multiplayer match, MAX_WEAPONS => ambiguous death cause
+				lastAttacker->siphonToAttacker = 0; //tell the person who killed you that they don't need to siphon life anymore (although they still damage themselves), this line is super meh
+			}
 
 			//destroy references to the player that damaged you last
 			siphonToAttacker = 0;
